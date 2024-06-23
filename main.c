@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <getopt.h>
 #include "linear/algebra.h"
+#include "./Ray.h"
 
 void color_print(FILE* stream, const Vector3 color) {
   size_t ir = 255.999 * color.components[0];
@@ -48,12 +49,31 @@ int main(int argc, char* argv[static argc + 1]) {
   double focal_length = 1.0;
   Vector3 camera_center = Vector3_make(0, 0, 0);
 
+  // Calculate the vectors across the horizontal and down the vertical viewport edges.
+  Vector3 viewport_u = Vector3_make(viewport_width, 0, 0);
+  Vector3 viewport_v = Vector3_make(0, -viewport_height, 0);
+  // Calculate the horizontal and vertical delta vectors from pixel to pixel.
+  Vector3 pixel_delta_u = Vector_scale(1.0 / image_width, viewport_u);
+  Vector3 pixel_delta_v = Vector_scale(1.0 / image_height, viewport_v);
+  // Calculate the location of the upper left pixel.
+  Vector3 viewport_upper_left = Vector_subtract(
+    Vector_subtract(
+      Vector_subtract(camera_center, Vector3_make(0, 0, focal_length)),
+      Vector_scale(0.5, viewport_u)),
+    Vector_scale(0.5, viewport_v));
+  Vector3 pixel00_loc = Vector_add(
+    viewport_upper_left,
+    Vector_scale(0.5, Vector_add(pixel_delta_u, pixel_delta_v)));
+
   printf("P3\n%zu %zu\n255\n", image_width, image_height);
   for (size_t j = 0; image_height > j; j++) {
     for (size_t i = 0; image_width > i; i++) {
-      color_print(
-        0,
-        Vector3_make((double)i / (image_width - 1), (double)j / (image_height - 1), 0.0));
+      Vector3 pixel_center = Vector_add(
+        pixel00_loc,
+        Vector_add(Vector_scale(i, pixel_delta_u), Vector_scale(j, pixel_delta_v)));
+      Vector3 ray_direction = Vector_subtract(pixel_center, camera_center);
+      Ray ray = { .direction = ray_direction, .origin = camera_center };
+      color_print(0, Ray_color(&ray));
     }
   }
   return result;

@@ -24,5 +24,4 @@ $(BUILD)/linalg.o: library/linear/MatrixN.c library/linear/Matrix.c library/line
 clean:
 	rm -f $(EXECUTABLE) ./build/*
 
-
 #bear -- make
