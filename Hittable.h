@@ -1,8 +1,10 @@
 #ifndef Hittable_H
 #define Hittable_H
 
+#include "linear/algebra.h"
 #include "./Ray.h"
 #include "./Sphere.h"
+#include "./Interval.h"
 
 typedef enum { Hittable_Sphere, Hittable_type_count } Hittable_type;
 
@@ -16,12 +18,11 @@ typedef struct {
 bool Hittable_hit(
   Hittable hittable,
   const Ray ray,
-  double tMin,
-  double tMax,
+  Interval interval,
   HitRecord record[static 1]) {
   switch (hittable.type) {
     case Hittable_Sphere:
-      return Sphere_hit(hittable.sphere, ray, tMin, tMax, record);
+      return Sphere_hit(hittable.sphere, ray, interval, record);
     case Hittable_type_count:
       return false;
   }

@@ -3,6 +3,7 @@
 
 #include <tgmath.h>
 #include "linear/algebra.h"
+#include "./Interval.h"
 #include "./Ray.h"
 #include "./HitRecord.h"
 
@@ -18,8 +19,7 @@ Sphere Sphere_make(Vector3 center, double radius) {
 bool Sphere_hit(
   const Sphere sphere,
   const Ray ray,
-  double tMin,
-  double tMax,
+  Interval interval,
   HitRecord record[static 1]) {
   bool result;
   Vector3 oc = Vector_subtract(sphere.center, ray.origin);
@@ -33,9 +33,9 @@ bool Sphere_hit(
   else {
     double discriminantRoot = sqrt(discriminant);
     double root = (h - discriminantRoot) / a;
-    if (root <= tMin || tMax <= root) {
+    if (!Interval_surrounds(interval, root)) {
       root = (h + discriminantRoot) / a;
-      if (root <= tMin || tMax <= root) {
+      if (!Interval_surrounds(interval, root)) {
         return false;
       }
     }

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "rxi/Array.h"
+#include "./Interval.h"
 #include "./HitRecord.h"
 #include "./Ray.h"
 #include "./Hittable.h"
@@ -34,19 +35,22 @@ void Hittables_clear(Hittables hittables[static 1]) {
   Array_clear(hittables->list);
 }
 bool Hittables_hit(
-  Hittables hittables[static 1],
+  const Hittables hittables[static 1],
   const Ray ray,
-  double tMin,
-  double tMax,
+  Interval interval,
   HitRecord record[static 1]) {
   HitRecord newRecord = { 0 };
   bool hit = false;
-  double closest = tMax;
+  double closest = interval.max;
   for (size_t i = 0; hittables->list->length > i; i++) {
-    if (Hittable_hit(hittables->list->data[i], ray, tMin, closest, &newRecord)) {
+    if (Hittable_hit(
+          hittables->list->data[i],
+          ray,
+          Interval_make(interval.min, closest),
+          &newRecord)) {
       hit = true;
       closest = newRecord.t;
-			memcpy(record, &newRecord, sizeof(HitRecord));
+      memcpy(record, &newRecord, sizeof(HitRecord));
     }
   }
   return hit;
