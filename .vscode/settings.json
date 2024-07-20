@@ -37,6 +37,7 @@
 		"Gamepad",
 		"GFLW",
 		"glfw",
+		"Hittables",
 		"mipmap",
 		"multisample",
 		"multisampled",

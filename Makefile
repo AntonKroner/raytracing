@@ -8,7 +8,7 @@ INCLUDES = -I"./library"
 LIBRARIES = -lm
 
 EXECUTABLE = raytracing.exe
-OBJECTS = linalg.o main.o
+OBJECTS = linalg.o Array.o main.o
 BUILD = build
 OBJECTS := $(addprefix $(BUILD)/,$(OBJECTS))
 
@@ -21,6 +21,8 @@ $(BUILD)/main.o: main.c
 	$(CC) $(INCLUDES) $(CCFLAGS) -o $@ -c $<
 $(BUILD)/linalg.o: library/linear/MatrixN.c library/linear/Matrix.c library/linear/VectorN.c library/linear/Vector.c
 	$(CC) $(INCLUDES) $(CCFLAGS) -o $@ library/linear/*.c -shared
+$(BUILD)/Array.o: library/rxi/Array.c
+	$(CC) $(INCLUDES) $(CCFLAGS) -o $@ -c $<
 clean:
 	rm -f $(EXECUTABLE) ./build/*
 

@@ -1,9 +1,26 @@
+#include "HitRecord.h"
+#include "Hittable.h"
+#include "Hittables.h"
+#include "Sphere.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include <tgmath.h>
 #include "linear/algebra.h"
 #include "./Ray.h"
+
+Vector3 color(const Ray ray, Hittables world[static 1]) {
+  Vector3 result;
+  HitRecord record = { 0 };
+  if (Hittables_hit(world, ray, 0, INFINITY, &record)) {
+    result = Hittable_color(record.normal);
+  }
+  else {
+    result = Ray_color(&ray);
+  }
+  return result;
+}
 
 void color_print(FILE* stream, const Vector3 color) {
   size_t ir = 255.999 * color.components[0];
@@ -14,6 +31,14 @@ void color_print(FILE* stream, const Vector3 color) {
   }
   else {
     printf("%zu %zu %zu\n", ir, ig, ib);
+  }
+}
+void logEnviron() {
+  extern char** environ;
+  printf("environ: \n");
+  char** s = environ;
+  for (; *s; s++) {
+    printf("%s\n", *s);
   }
 }
 
@@ -48,7 +73,6 @@ int main(int argc, char* argv[static argc + 1]) {
   double viewport_width = viewport_height * ((double)image_width / (double)image_height);
   double focal_length = 1.0;
   Vector3 camera_center = Vector3_make(0, 0, 0);
-
   // Calculate the vectors across the horizontal and down the vertical viewport edges.
   Vector3 viewport_u = Vector3_make(viewport_width, 0, 0);
   Vector3 viewport_v = Vector3_make(0, -viewport_height, 0);
@@ -65,6 +89,10 @@ int main(int argc, char* argv[static argc + 1]) {
     viewport_upper_left,
     Vector_scale(0.5, Vector_add(pixel_delta_u, pixel_delta_v)));
 
+  Hittables* world = Hittables_create();
+  Hittables_add(world, Sphere_make(Vector3_make(0, 0, -1.0), 0.5));
+  Hittables_add(world, Sphere_make(Vector3_make(0, -100.5, -1.0), 100));
+
   printf("P3\n%zu %zu\n255\n", image_width, image_height);
   for (size_t j = 0; image_height > j; j++) {
     for (size_t i = 0; image_width > i; i++) {
@@ -73,8 +101,9 @@ int main(int argc, char* argv[static argc + 1]) {
         Vector_add(Vector_scale(i, pixel_delta_u), Vector_scale(j, pixel_delta_v)));
       Vector3 ray_direction = Vector_subtract(pixel_center, camera_center);
       Ray ray = { .direction = ray_direction, .origin = camera_center };
-      color_print(0, Ray_color(&ray));
+      color_print(0, color(ray, world));
     }
   }
+  Hittables_destroy(world);
   return result;
 }
