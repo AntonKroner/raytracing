@@ -27,5 +27,14 @@ bool Interval_contains(const Interval interval, const double x) {
 bool Interval_surrounds(const Interval interval, const double x) {
   return interval.min < x && x < interval.max;
 }
+double Interval_clamp(const Interval interval, double x) {
+  if (x < interval.min) {
+    return interval.min;
+  }
+  if (x > interval.max) {
+    return interval.max;
+  }
+  return x;
+}
 
 #endif // Interval_H

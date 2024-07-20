@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "linear/algebra.h"
+#include "random.h"
 #include "./HitRecord.h"
 #include "./Hittable.h"
 #include "./Hittables.h"
@@ -16,8 +17,12 @@ typedef struct {
         size_t height;
     } image;
     Vector3 center;
-    Vector3 pixel_delta_u;
-    Vector3 pixel_delta_v;
+    struct {
+        Vector3 delta_u;
+        Vector3 delta_v;
+        size_t samples;
+        double scale;
+    } pixel;
     Vector3 pixel00_loc;
 } Camera;
 
@@ -26,13 +31,32 @@ void Camera_initialize(Camera camera[static 1]);
 void Camera_render(Camera camera[static 1], const Hittables world[static 1], FILE* stream);
 Vector3 Camera_color(const Ray ray, const Hittables world[static 1]);
 void Camera_print(FILE* stream, const Vector3 color);
+Vector3 sampleSquare() {
+  return Vector3_make(randomDouble() - 0.5, randomDouble() - 0.5, 0);
+}
+Ray Camera_ray(Camera camera[static 1], size_t i, size_t j) {
+  Vector3 offset = sampleSquare();
+  Vector3 sample = Vector_add(
+    camera->pixel00_loc,
+    Vector_add(
+      Vector_scale(i + offset.components[0], camera->pixel.delta_u),
+      Vector_scale(j + offset.components[1], camera->pixel.delta_v)));
+  Vector3 direction = Vector_subtract(sample, camera->center);
+  Ray result = { .direction = direction, .origin = camera->center };
+  return result;
+}
 Camera Camera_make() {
-  const Camera result = { .aspectRatio = 16.0 / 9.0, .image.width = 400 };
+  const Camera result = {
+    .aspectRatio = 16.0 / 9.0,
+    .image.width = 400,
+    .pixel.samples = 100,
+  };
   return result;
 }
 void Camera_initialize(Camera camera[static 1]) {
   camera->image.height = camera->image.width / camera->aspectRatio;
   camera->image.height = (camera->image.height < 1) ? 1 : camera->image.height;
+  camera->pixel.scale = 1.0 / camera->pixel.samples;
   double viewport_height = 2.0;
   double viewport_width =
     viewport_height * ((double)camera->image.width / (double)camera->image.height);
@@ -40,8 +64,8 @@ void Camera_initialize(Camera camera[static 1]) {
   camera->center = Vector3_make(0, 0, 0);
   Vector3 viewport_u = Vector3_make(viewport_width, 0, 0);
   Vector3 viewport_v = Vector3_make(0, -viewport_height, 0);
-  camera->pixel_delta_u = Vector_scale(1.0 / camera->image.width, viewport_u);
-  camera->pixel_delta_v = Vector_scale(1.0 / camera->image.height, viewport_v);
+  camera->pixel.delta_u = Vector_scale(1.0 / camera->image.width, viewport_u);
+  camera->pixel.delta_v = Vector_scale(1.0 / camera->image.height, viewport_v);
   Vector3 viewport_upper_left = Vector_subtract(
     Vector_subtract(
       Vector_subtract(camera->center, Vector3_make(0, 0, focal_length)),
@@ -49,21 +73,19 @@ void Camera_initialize(Camera camera[static 1]) {
     Vector_scale(0.5, viewport_v));
   camera->pixel00_loc = Vector_add(
     viewport_upper_left,
-    Vector_scale(0.5, Vector_add(camera->pixel_delta_u, camera->pixel_delta_v)));
+    Vector_scale(0.5, Vector_add(camera->pixel.delta_u, camera->pixel.delta_v)));
 }
 void Camera_render(Camera camera[static 1], const Hittables world[static 1], FILE* stream) {
   Camera_initialize(camera);
   printf("P3\n%zu %zu\n255\n", camera->image.width, camera->image.height);
   for (size_t j = 0; camera->image.height > j; j++) {
     for (size_t i = 0; camera->image.width > i; i++) {
-      Vector3 pixel_center = Vector_add(
-        camera->pixel00_loc,
-        Vector_add(
-          Vector_scale(i, camera->pixel_delta_u),
-          Vector_scale(j, camera->pixel_delta_v)));
-      Vector3 ray_direction = Vector_subtract(pixel_center, camera->center);
-      Ray ray = { .direction = ray_direction, .origin = camera->center };
-      Camera_print(stream, Camera_color(ray, world));
+      Vector3 pixel = Vector3_fill(0);
+      for (size_t sample = 0; camera->pixel.samples > sample; sample++) {
+        Ray ray = Camera_ray(camera, i, j);
+        pixel = Vector_add(pixel, Camera_color(ray, world));
+      }
+      Camera_print(stream, Vector_scale(camera->pixel.scale, pixel));
     }
   }
 }
@@ -79,14 +101,15 @@ Vector3 Camera_color(const Ray ray, const Hittables world[static 1]) {
   return result;
 }
 void Camera_print(FILE* stream, const Vector3 color) {
-  size_t ir = 255.999 * color.components[0];
-  size_t ig = 255.999 * color.components[1];
-  size_t ib = 255.999 * color.components[2];
+  static const Interval intensity = { .min = 0.000, .max = 0.999 };
+  size_t red = 256 * Interval_clamp(intensity, color.components[0]);
+  size_t green = 256 * Interval_clamp(intensity, color.components[1]);
+  size_t blue = 256 * Interval_clamp(intensity, color.components[2]);
   if (stream) {
-    fprintf(stream, "%zu %zu %zu\n", ir, ig, ib);
+    fprintf(stream, "%zu %zu %zu\n", red, green, blue);
   }
   else {
-    printf("%zu %zu %zu\n", ir, ig, ib);
+    printf("%zu %zu %zu\n", red, green, blue);
   }
 }
 
