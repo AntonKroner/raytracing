@@ -5,8 +5,8 @@
 #include <getopt.h>
 #include "linear/algebra.h"
 #include "./Camera.h"
+#include "./Hittable/Hittable.h"
 #include "./Hittables.h"
-#include "./Sphere.h"
 
 void logEnviron() {
   extern char** environ;
@@ -42,8 +42,8 @@ int main(int argc, char* argv[static argc + 1]) {
   }
   Camera camera = Camera_make();
   Hittables* world = Hittables_create();
-  Hittables_add(world, Sphere_make(Vector3_make(0, 0, -1.0), 0.5));
-  Hittables_add(world, Sphere_make(Vector3_make(0, -100.5, -1.0), 100));
+  Hittables_add(world, Hittable_Sphere_make(Vector3_make(0, 0, -1.0), 0.5));
+  Hittables_add(world, Hittable_Sphere_make(Vector3_make(0, -100.5, -1.0), 100));
   Camera_render(&camera, world, 0);
   Hittables_destroy(world);
   return result;

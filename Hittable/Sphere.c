@@ -1,23 +1,18 @@
-#ifndef Sphere_H
-#define Sphere_H
 
+#include "Hittable.h"
 #include <tgmath.h>
 #include "linear/algebra.h"
-#include "./Interval.h"
-#include "./Ray.h"
-#include "./HitRecord.h"
+#include "rxi/Array.h"
+#include "../HitRecord.h"
+#include "../Interval.h"
+#include "../Ray.h"
 
-typedef struct {
-    Vector3 center;
-    double radius;
-} Sphere;
-
-Sphere Sphere_make(Vector3 center, double radius) {
-  Sphere result = { .center = center, .radius = fmax(0, radius) };
+Hittable_Sphere Hittable_Sphere_make(Vector3 center, double radius) {
+  Hittable_Sphere result = { .center = center, .radius = fmax(0, radius) };
   return result;
 }
-bool Sphere_hit(
-  const Sphere sphere,
+bool Hittable_Sphere_hit(
+  const Hittable_Sphere sphere,
   const Ray ray,
   Interval interval,
   HitRecord record[static 1]) {
@@ -48,15 +43,17 @@ bool Sphere_hit(
   }
   return result;
 }
-Vector3 Sphere_at(const Ray ray[const static 1], const double t) {
+Vector3 Hittable_Sphere_at(const Ray ray[const static 1], const double t) {
   return Vector_add(ray->origin, Vector_scale(t, ray->direction));
 }
-Vector3 Sphere_color(const Ray ray[const static 1]) {
+Vector3 Hittable_Sphere_color(const Ray ray[const static 1]) {
   Vector3 direction = Vector_normalize(ray->direction);
   double a = 0.5 * (direction.components[1] + 1.0);
   return Vector_add(
     Vector_scale(1.0 - a, Vector3_make(1.0, 1.0, 1.0)),
     Vector_scale(a, Vector3_make(0.5, 0.7, 1.0)));
 }
-
-#endif // Sphere_H
+void Hittable_Sphere_add(Hittable_Array hittables[static 1], const Hittable_Sphere sphere) {
+  Hittable item = { .type = Hittable_sphere, .sphere = sphere };
+  Array_push(hittables, item);
+}
