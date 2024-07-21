@@ -5,7 +5,6 @@
 #include "linear/algebra.h"
 #include "random.h"
 #include "./HitRecord.h"
-#include "./Hittable.h"
 #include "./Hittables.h"
 #include "./Interval.h"
 #include "./Ray.h"
@@ -24,12 +23,13 @@ typedef struct {
         double scale;
     } pixel;
     Vector3 pixel00_loc;
+    size_t maxDepth;
 } Camera;
 
 Camera Camera_make();
 void Camera_initialize(Camera camera[static 1]);
 void Camera_render(Camera camera[static 1], const Hittables world[static 1], FILE* stream);
-Vector3 Camera_color(const Ray ray, const Hittables world[static 1]);
+Vector3 Camera_color(const Ray ray, const Hittables world[static 1], size_t depth);
 void Camera_print(FILE* stream, const Vector3 color);
 Vector3 sampleSquare() {
   return Vector3_make(randomDouble() - 0.5, randomDouble() - 0.5, 0);
@@ -57,6 +57,7 @@ void Camera_initialize(Camera camera[static 1]) {
   camera->image.height = camera->image.width / camera->aspectRatio;
   camera->image.height = (camera->image.height < 1) ? 1 : camera->image.height;
   camera->pixel.scale = 1.0 / camera->pixel.samples;
+  camera->maxDepth = 50;
   double viewport_height = 2.0;
   double viewport_width =
     viewport_height * ((double)camera->image.width / (double)camera->image.height);
@@ -83,17 +84,24 @@ void Camera_render(Camera camera[static 1], const Hittables world[static 1], FIL
       Vector3 pixel = Vector3_fill(0);
       for (size_t sample = 0; camera->pixel.samples > sample; sample++) {
         Ray ray = Camera_ray(camera, i, j);
-        pixel = Vector_add(pixel, Camera_color(ray, world));
+        pixel = Vector_add(pixel, Camera_color(ray, world, camera->maxDepth));
       }
       Camera_print(stream, Vector_scale(camera->pixel.scale, pixel));
     }
   }
 }
-Vector3 Camera_color(const Ray ray, const Hittables world[static 1]) {
+Vector3 Camera_color(const Ray ray, const Hittables world[static 1], size_t depth) {
   Vector3 result;
   HitRecord record = { 0 };
-  if (Hittables_hit(world, ray, Interval_make(0, INFINITY), &record)) {
-    result = Hittable_color(record.normal);
+
+  if (!depth) {
+    result = Vector3_fill(0);
+  }
+  else if (Hittables_hit(world, ray, Interval_make(0.001, INFINITY), &record)) {
+    Vector3 direction =
+      Vector_add(record.normal, Vector3_randomOnHemisphere(record.normal));
+    Ray ray = { .direction = direction, .origin = record.p };
+    result = Vector_scale(0.5, Camera_color(ray, world, depth - 1));
   }
   else {
     result = Ray_color(&ray);
@@ -102,9 +110,9 @@ Vector3 Camera_color(const Ray ray, const Hittables world[static 1]) {
 }
 void Camera_print(FILE* stream, const Vector3 color) {
   static const Interval intensity = { .min = 0.000, .max = 0.999 };
-  size_t red = 256 * Interval_clamp(intensity, color.components[0]);
-  size_t green = 256 * Interval_clamp(intensity, color.components[1]);
-  size_t blue = 256 * Interval_clamp(intensity, color.components[2]);
+  size_t red = 256 * Interval_clamp(intensity, sqrt(fmax(0, color.components[0])));
+  size_t green = 256 * Interval_clamp(intensity, sqrt(fmax(0, color.components[1])));
+  size_t blue = 256 * Interval_clamp(intensity, sqrt(fmax(0, color.components[2])));
   if (stream) {
     fprintf(stream, "%zu %zu %zu\n", red, green, blue);
   }
