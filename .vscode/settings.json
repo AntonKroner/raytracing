@@ -38,6 +38,7 @@
 		"GFLW",
 		"glfw",
 		"Hittables",
+		"lambertian",
 		"mipmap",
 		"multisample",
 		"multisampled",

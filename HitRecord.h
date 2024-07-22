@@ -1,6 +1,5 @@
 #ifndef HitRecord_H
 #define HitRecord_H
-
 #include "linear/algebra.h"
 #include "./Ray.h"
 

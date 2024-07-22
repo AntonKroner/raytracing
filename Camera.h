@@ -1,6 +1,5 @@
 #ifndef Camera_H
 #define Camera_H
-
 #include <stdio.h>
 #include "linear/algebra.h"
 #include "./Hittables.h"

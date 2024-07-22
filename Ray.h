@@ -1,6 +1,5 @@
 #ifndef Ray_H
 #define Ray_H
-
 #include "linear/algebra.h"
 
 typedef struct {

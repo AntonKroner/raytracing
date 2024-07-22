@@ -1,6 +1,5 @@
 #ifndef Hittables_H
 #define Hittables_H
-
 #include "./Hittable/Hittable.h"
 #include "./HitRecord.h"
 #include "./Interval.h"
@@ -12,8 +11,10 @@ typedef struct {
 
 Hittables* Hittables_create();
 void Hittables_destroy(Hittables* hittables);
-#define Hittables_add(a, b) \
-  _Generic((b), Hittable_Sphere: Hittable_Sphere_add)((a->list), (b))
+#define Hittables_add(Hittables, Hittable)                    \
+  _Generic((Hittable), Hittable_Sphere: Hittable_Sphere_add)( \
+    (Hittables->list),                                        \
+    (Hittable))
 void Hittables_clear(Hittables hittables[static 1]);
 bool Hittables_hit(
   const Hittables hittables[static 1],

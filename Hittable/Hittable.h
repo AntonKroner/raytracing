@@ -1,6 +1,5 @@
 #ifndef Hittable_H
 #define Hittable_H
-
 #include "linear/algebra.h"
 #include "rxi/Array.h"
 #include "../HitRecord.h"
