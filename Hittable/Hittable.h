@@ -5,10 +5,12 @@
 #include "../HitRecord.h"
 #include "../Interval.h"
 #include "../Ray.h"
+#include "../Material/Material.h"
 
 typedef struct {
     Vector3 center;
     double radius;
+    Material* material;
 } Hittable_Sphere;
 typedef enum { Hittable_sphere, Hittable_type_count } Hittable_type;
 typedef struct {
@@ -26,7 +28,7 @@ bool Hittable_hit(
   HitRecord record[static 1]);
 Vector3 Hittable_color(Vector3 normal);
 
-Hittable_Sphere Hittable_Sphere_make(Vector3 center, double radius);
+Hittable_Sphere Hittable_Sphere_make(Vector3 center, double radius, Material material[static 1]);
 bool Hittable_Sphere_hit(
   const Hittable_Sphere sphere,
   const Ray ray,

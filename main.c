@@ -6,6 +6,7 @@
 #include "linear/algebra.h"
 #include "./Camera.h"
 #include "./Hittable/Hittable.h"
+#include "./Material/Material.h"
 #include "./Hittables.h"
 
 void logEnviron() {
@@ -42,8 +43,26 @@ int main(int argc, char* argv[static argc + 1]) {
   }
   Camera camera = Camera_make();
   Hittables* world = Hittables_create();
-  Hittables_add(world, Hittable_Sphere_make(Vector3_make(0, 0, -1.0), 0.5));
-  Hittables_add(world, Hittable_Sphere_make(Vector3_make(0, -100.5, -1.0), 100));
+
+  Material material_ground =
+    Material_make(Material_lambertian, Vector3_make(0.8, 0.8, 0.0));
+  Material material_center =
+    Material_make(Material_lambertian, Vector3_make(0.1, 0.2, 0.5));
+  Material material_left = Material_make(Material_metal, Vector3_make(0.8, 0.8, 0.8));
+  Material material_right = Material_make(Material_metal, Vector3_make(0.8, 0.6, 0.2));
+
+  Hittables_add(
+    world,
+    Hittable_Sphere_make(Vector3_make(0, -100.5, -1.0), 100, &material_ground));
+  Hittables_add(
+    world,
+    Hittable_Sphere_make(Vector3_make(0, 0, -1.2), 0.5, &material_center));
+  Hittables_add(
+    world,
+    Hittable_Sphere_make(Vector3_make(-1, 0, -1.0), 0.5, &material_left));
+  Hittables_add(
+    world,
+    Hittable_Sphere_make(Vector3_make(1, 0, -1.0), 0.5, &material_right));
   Camera_render(&camera, world, 0);
   Hittables_destroy(world);
   return result;

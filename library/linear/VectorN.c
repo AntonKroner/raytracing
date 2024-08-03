@@ -115,6 +115,21 @@ Vector4f Vector4f_make(float x, float y, float z, float w) {
     }                                                                  \
     return result;                                                     \
   }
+#define VectorN_multiply(N)                                            \
+  Vector##N Vector##N##_multiply(Vector##N a, Vector##N b) {           \
+    Vector##N result = { 0 };                                          \
+    for (size_t n = 0; N > n; n++) {                                   \
+      result.components[n] = a.components[n] * b.components[n];        \
+    }                                                                  \
+    return result;                                                     \
+  }                                                                    \
+  Vector##N##f Vector##N##f_multiply(Vector##N##f a, Vector##N##f b) { \
+    Vector##N##f result = { 0 };                                       \
+    for (size_t n = 0; N > n; n++) {                                   \
+      result.components[n] = a.components[n] * b.components[n];        \
+    }                                                                  \
+    return result;                                                     \
+  }
 // detail: https://realtimecollisiondetection.net/blog/?p=89
 #define VectorN_areEqual(N)                                                               \
   bool Vector##N##_areEqual(Vector##N a, Vector##N b) {                                   \
@@ -236,8 +251,9 @@ Vector3f Vector3f_cross(Vector3f v, Vector3f w) {
 VectorN_fill(2) VectorN_fill(3) VectorN_fill(4) VectorN_from(2) VectorN_from(3)
   VectorN_from(4) VectorN_scale(2) VectorN_scale(3) VectorN_scale(4) VectorN_add(2)
     VectorN_add(3) VectorN_add(4) VectorN_subtract(2) VectorN_subtract(3)
-      VectorN_subtract(4) VectorN_areEqual(2) VectorN_areEqual(3) VectorN_areEqual(4)
-        VectorN_inner(2) VectorN_inner(3) VectorN_inner(4) VectorN_norm(2) VectorN_norm(3)
-          VectorN_norm(4) VectorN_normalize(2) VectorN_normalize(3) VectorN_normalize(4)
-            VectorN_transform(3) VectorN_transform(4) VectorN_print(2) VectorN_print(3)
-              VectorN_print(4)
+      VectorN_subtract(4) VectorN_multiply(2) VectorN_multiply(3) VectorN_multiply(4)
+        VectorN_areEqual(2) VectorN_areEqual(3) VectorN_areEqual(4) VectorN_inner(2)
+          VectorN_inner(3) VectorN_inner(4) VectorN_norm(2) VectorN_norm(3)
+            VectorN_norm(4) VectorN_normalize(2) VectorN_normalize(3) VectorN_normalize(4)
+              VectorN_transform(3) VectorN_transform(4) VectorN_print(2) VectorN_print(3)
+                VectorN_print(4)

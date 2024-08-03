@@ -5,7 +5,7 @@ INCLUDES = -I"./library"
 LIBRARIES = -lm
 
 EXECUTABLE = raytracing.exe
-OBJECTS = linalg.o Array.o Ray.o Hittables.o Hittable.o Camera.o Interval.o HitRecord.o main.o
+OBJECTS = linalg.o Array.o Ray.o Hittables.o Hittable.o Camera.o Interval.o HitRecord.o Material.o main.o
 BUILD = build
 OBJECTS := $(addprefix $(BUILD)/,$(OBJECTS))
 
@@ -20,6 +20,8 @@ $(BUILD)/linalg.o: library/linear/MatrixN.c library/linear/Matrix.c library/line
 	$(CC) $(INCLUDES) $(CCFLAGS) -o $@ library/linear/*.c -shared
 $(BUILD)/Hittable.o: Hittable/Sphere.c Hittable/Hittable.c
 	$(CC) $(INCLUDES) $(CCFLAGS) -o $@ Hittable/*.c -shared
+$(BUILD)/Material.o: Material/Metal.c Material/Lambertian.c Material/Material.c
+	$(CC) $(INCLUDES) $(CCFLAGS) -o $@ Material/*.c -shared
 $(BUILD)/Array.o: library/rxi/Array.c
 	$(CC) $(INCLUDES) $(CCFLAGS) -o $@ -c $<
 $(BUILD)/Hittables.o: Hittables.c

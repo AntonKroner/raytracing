@@ -1,7 +1,7 @@
 #ifndef linear_algebra_H_
 #define linear_algebra_H_
 
-#define LINEAR_ALGEBRA_VERSION "0.0.1"
+#define LINEAR_ALGEBRA_VERSION "0.0.2"
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -102,6 +102,15 @@ void(Vector_print)(Vector vector[static 1]);
     Vector2f: Vector2f_subtract, \
     Vector3f: Vector3f_subtract, \
     Vector4f: Vector4f_subtract)((a), (b))
+#define Vector_multiply(a, b)    \
+  _Generic(                      \
+    (a),                         \
+    Vector2: Vector2_multiply,   \
+    Vector3: Vector3_multiply,   \
+    Vector4: Vector4_multiply,   \
+    Vector2f: Vector2f_multiply, \
+    Vector3f: Vector3f_multiply, \
+    Vector4f: Vector4f_multiply)((a), (b))
 #define Vector_areEqual(a, b)    \
   _Generic(                      \
     (a),                         \
@@ -210,6 +219,7 @@ Vector3f Vector3f_cross(Vector3f v, Vector3f w);
   Vector##N Vector##N##_scale(double scalar, Vector##N vector);             \
   Vector##N Vector##N##_add(Vector##N a, Vector##N b);                      \
   Vector##N Vector##N##_subtract(Vector##N a, Vector##N b);                 \
+  Vector##N Vector##N##_multiply(Vector##N a, Vector##N b);                 \
   bool Vector##N##_areEqual(Vector##N a, Vector##N b);                      \
   double Vector##N##_inner(Vector##N a, Vector##N b);                       \
   double Vector##N##_norm(Vector##N vector);                                \
@@ -221,6 +231,7 @@ Vector3f Vector3f_cross(Vector3f v, Vector3f w);
   Vector##N##f Vector##N##f_scale(float scalar, Vector##N##f vector);       \
   Vector##N##f Vector##N##f_add(Vector##N##f a, Vector##N##f b);            \
   Vector##N##f Vector##N##f_subtract(Vector##N##f a, Vector##N##f b);       \
+  Vector##N##f Vector##N##f_multiply(Vector##N##f a, Vector##N##f b);       \
   bool Vector##N##f_areEqual(Vector##N##f a, Vector##N##f b);               \
   float Vector##N##f_inner(Vector##N##f a, Vector##N##f b);                 \
   float Vector##N##f_norm(Vector##N##f vector);                             \

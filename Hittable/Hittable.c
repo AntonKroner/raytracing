@@ -12,8 +12,10 @@ bool Hittable_hit(
   switch (hittable.type) {
     case Hittable_sphere:
       return Hittable_Sphere_hit(hittable.sphere, ray, interval, record);
+      break;
     case Hittable_type_count:
       return false;
+      break;
   }
 }
 Vector3 Hittable_color(Vector3 normal) {

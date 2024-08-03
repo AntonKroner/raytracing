@@ -7,6 +7,7 @@
 #include "./Hittables.h"
 #include "./Interval.h"
 #include "./Ray.h"
+#include "./Material/Material.h"
 
 static void initialize(Camera camera[static 1]);
 static Vector3 Camera_color(const Ray ray, const Hittables world[static 1], size_t depth);
@@ -66,10 +67,19 @@ static Vector3 Camera_color(const Ray ray, const Hittables world[static 1], size
     result = Vector3_fill(0);
   }
   else if (Hittables_hit(world, ray, Interval_make(0.001, INFINITY), &record)) {
-    Vector3 direction =
-      Vector_add(record.normal, Vector3_randomOnHemisphere(record.normal));
-    Ray ray = { .direction = direction, .origin = record.p };
-    result = Vector_scale(0.5, Camera_color(ray, world, depth - 1));
+    Ray scattered = { 0 };
+    Vector3 attenuation = { 0 };
+    if (
+      Material_scatter(*(Material*)record.material, ray, record, &attenuation, &scattered)) {
+      result = Vector_multiply(attenuation, Camera_color(scattered, world, depth - 1));
+    }
+    else {
+      result = Vector3_fill(0);
+    }
+    // Vector3 direction =
+    //   Vector_add(record.normal, Vector3_randomOnHemisphere(record.normal));
+    // Ray ray = { .direction = direction, .origin = record.p };
+    // result = Vector_scale(0.5, Camera_color(ray, world, depth - 1));
   }
   else {
     result = Ray_color(&ray);

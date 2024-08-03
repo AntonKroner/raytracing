@@ -1,11 +1,15 @@
 #ifndef HitRecord_H
 #define HitRecord_H
 #include "linear/algebra.h"
+// #include "./Material/Material.h"
 #include "./Ray.h"
+
+// typedef void Material;
 
 typedef struct {
     Vector3 p;
     Vector3 normal;
+    void* material;
     double t;
     bool front;
 } HitRecord;

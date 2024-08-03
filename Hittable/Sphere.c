@@ -7,8 +7,15 @@
 #include "../Interval.h"
 #include "../Ray.h"
 
-Hittable_Sphere Hittable_Sphere_make(Vector3 center, double radius) {
-  Hittable_Sphere result = { .center = center, .radius = fmax(0, radius) };
+Hittable_Sphere Hittable_Sphere_make(
+  Vector3 center,
+  double radius,
+  Material material[static 1]) {
+  Hittable_Sphere result = {
+    .center = center,
+    .radius = fmax(0, radius),
+    .material = material,
+  };
   return result;
 }
 bool Hittable_Sphere_hit(
@@ -39,6 +46,7 @@ bool Hittable_Sphere_hit(
     Vector3 normal =
       Vector_scale(1 / sphere.radius, Vector_subtract(record->p, sphere.center));
     HitRecord_faceSet(record, ray, normal);
+    record->material = sphere.material;
     result = true;
   }
   return result;
