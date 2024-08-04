@@ -4,6 +4,15 @@
 #include <stdlib.h>
 #include "linear/algebra.h"
 
+double randomDouble();
+double randomDoubleInterval(double min, double max);
+Vector3 Vector3_random();
+Vector3 Vector3_randomInterval(double min, double max);
+Vector3 Vector3_randomUnitSphere();
+Vector3 Vector3_randomUnit();
+Vector3 Vector3_randomOnHemisphere(Vector3 normal);
+
+#ifdef randomDouble_implementation
 double randomDouble() {
   return (double)rand() / ((double)RAND_MAX + 1.0);
 }
@@ -39,5 +48,6 @@ Vector3 Vector3_randomOnHemisphere(Vector3 normal) {
     return Vector_scale(-1, result);
   }
 }
+#endif //
 
 #endif // randomDouble_H_

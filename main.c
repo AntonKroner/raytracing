@@ -45,11 +45,15 @@ int main(int argc, char* argv[static argc + 1]) {
   Hittables* world = Hittables_create();
 
   Material material_ground =
-    Material_make(Material_lambertian, Vector3_make(0.8, 0.8, 0.0));
+    Material_make(Material_lambertian, Vector3_make(0.8, 0.8, 0.0), 0);
   Material material_center =
-    Material_make(Material_lambertian, Vector3_make(0.1, 0.2, 0.5));
-  Material material_left = Material_make(Material_metal, Vector3_make(0.8, 0.8, 0.8));
-  Material material_right = Material_make(Material_metal, Vector3_make(0.8, 0.6, 0.2));
+    Material_make(Material_lambertian, Vector3_make(0.1, 0.2, 0.5), 0);
+  Material material_left =
+    Material_make(Material_dielectric, Vector3_make(0.8, 0.8, 0.8), 1.5);
+  Material material_bubble =
+    Material_make(Material_dielectric, Vector3_make(0.8, 0.6, 0.2), 1.0 / 1.5);
+  Material material_right =
+    Material_make(Material_metal, Vector3_make(0.8, 0.6, 0.2), 1.0);
 
   Hittables_add(
     world,
@@ -60,6 +64,9 @@ int main(int argc, char* argv[static argc + 1]) {
   Hittables_add(
     world,
     Hittable_Sphere_make(Vector3_make(-1, 0, -1.0), 0.5, &material_left));
+  Hittables_add(
+    world,
+    Hittable_Sphere_make(Vector3_make(-1, 0, -1.0), 0.4, &material_bubble));
   Hittables_add(
     world,
     Hittable_Sphere_make(Vector3_make(1, 0, -1.0), 0.5, &material_right));

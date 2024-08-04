@@ -3,14 +3,17 @@
 #include "../Ray.h"
 #include "../HitRecord.h"
 
-Material Material_make(Material_type type, Vector3 albedo) {
+Material Material_make(Material_type type, Vector3 albedo, double parameter) {
   Material result = { .type = type };
   switch (type) {
     case Material_lambertian:
       result.lambertian = Material_Lambertian_make(albedo);
       break;
     case Material_metal:
-      result.metal = Material_Metal_make(albedo);
+      result.metal = Material_Metal_make(albedo, parameter);
+      break;
+    case Material_dielectric:
+      result.dielectric = Material_Dielectric_make(albedo, parameter);
       break;
     case Material_type_count:
       break;
@@ -35,6 +38,13 @@ bool Material_scatter(
     case Material_metal:
       return Material_Metal_scatter(material.metal, ray, record, attenuation, scattered);
       break;
+    case Material_dielectric:
+      return Material_Dielectric_scatter(
+        material.dielectric,
+        ray,
+        record,
+        attenuation,
+        scattered);
     case Material_type_count:
       return false;
       break;
