@@ -9,6 +9,7 @@
 typedef struct {
     Vector3 p;
     Vector3 normal;
+    // TODO: figure out how to avoid having the wacky void pointer to avoid circular dependency
     void* material;
     double t;
     bool front;
