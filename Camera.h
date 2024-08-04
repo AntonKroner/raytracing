@@ -19,6 +19,21 @@ typedef struct {
     } pixel;
     Vector3 pixel00_loc;
     size_t maxDepth;
+    double verticalFov;
+    Vector3 position;
+    Vector3 up;
+    Vector3 lookAt;
+    struct {
+        Vector3 u;
+        Vector3 v;
+        Vector3 w;
+    } basis;
+    struct {
+        Vector3 u;
+        Vector3 v;
+        double distance;
+        double angle;
+    } defocus;
 } Camera;
 
 Camera Camera_make();

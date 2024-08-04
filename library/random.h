@@ -11,6 +11,7 @@ Vector3 Vector3_randomInterval(double min, double max);
 Vector3 Vector3_randomUnitSphere();
 Vector3 Vector3_randomUnit();
 Vector3 Vector3_randomOnHemisphere(Vector3 normal);
+Vector3 Vector3_randomInUnitDisk();
 
 #ifdef randomDouble_implementation
 double randomDouble() {
@@ -46,6 +47,14 @@ Vector3 Vector3_randomOnHemisphere(Vector3 normal) {
   }
   else {
     return Vector_scale(-1, result);
+  }
+}
+Vector3 Vector3_randomInUnitDisk() {
+  while (true) {
+    Vector3 p = Vector3_make(randomDoubleInterval(-1, 1), randomDoubleInterval(-1, 1), 0);
+    if (Vector_inner(p, p) < 1) {
+      return p;
+    }
   }
 }
 #endif //

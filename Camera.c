@@ -20,6 +20,12 @@ Camera Camera_make() {
     .aspectRatio = 16.0 / 9.0,
     .image.width = 400,
     .pixel.samples = 100,
+    .verticalFov = 90,
+    .position = Vector3_fill(0),
+    .up = Vector3_make(0, 1, 0),
+    .lookAt = Vector3_make(0, 0, -1),
+    .defocus.distance = 10,
+    .defocus.angle = 0,
   };
   return result;
 }
@@ -28,23 +34,37 @@ static void initialize(Camera camera[static 1]) {
   camera->image.height = (camera->image.height < 1) ? 1 : camera->image.height;
   camera->pixel.scale = 1.0 / camera->pixel.samples;
   camera->maxDepth = 50;
-  double viewport_height = 2.0;
+  camera->center = camera->position;
+
+  double h = tan(M_PI / 360 * camera->verticalFov);
+  double viewport_height = 2.0 * h * camera->defocus.distance;
   double viewport_width =
     viewport_height * ((double)camera->image.width / (double)camera->image.height);
-  double focal_length = 1.0;
-  camera->center = Vector3_make(0, 0, 0);
-  Vector3 viewport_u = Vector3_make(viewport_width, 0, 0);
-  Vector3 viewport_v = Vector3_make(0, -viewport_height, 0);
+
+  camera->basis.w = Vector_normalize(Vector_subtract(camera->position, camera->lookAt));
+  camera->basis.u = Vector_normalize(Vector_cross(camera->up, camera->basis.w));
+  camera->basis.v = Vector_cross(camera->basis.w, camera->basis.u);
+
+  Vector3 viewport_u = Vector_scale(viewport_width, camera->basis.u);
+  Vector3 viewport_v = Vector_scale(-viewport_height, camera->basis.v);
+
   camera->pixel.delta_u = Vector_scale(1.0 / camera->image.width, viewport_u);
   camera->pixel.delta_v = Vector_scale(1.0 / camera->image.height, viewport_v);
   Vector3 viewport_upper_left = Vector_subtract(
     Vector_subtract(
-      Vector_subtract(camera->center, Vector3_make(0, 0, focal_length)),
+      Vector_subtract(
+        camera->center,
+        Vector_scale(camera->defocus.distance, camera->basis.w)),
       Vector_scale(0.5, viewport_u)),
     Vector_scale(0.5, viewport_v));
   camera->pixel00_loc = Vector_add(
     viewport_upper_left,
     Vector_scale(0.5, Vector_add(camera->pixel.delta_u, camera->pixel.delta_v)));
+
+  double defocus_radius =
+    camera->defocus.distance * tan(M_PI / 360 * camera->defocus.angle);
+  camera->defocus.u = Vector_scale(defocus_radius, camera->basis.u);
+  camera->defocus.v = Vector_scale(defocus_radius, camera->basis.v);
 }
 void Camera_render(Camera camera[static 1], const Hittables world[static 1], FILE* stream) {
   initialize(camera);
@@ -76,10 +96,6 @@ static Vector3 Camera_color(const Ray ray, const Hittables world[static 1], size
     else {
       result = Vector3_fill(0);
     }
-    // Vector3 direction =
-    //   Vector_add(record.normal, Vector3_randomOnHemisphere(record.normal));
-    // Ray ray = { .direction = direction, .origin = record.p };
-    // result = Vector_scale(0.5, Camera_color(ray, world, depth - 1));
   }
   else {
     result = Ray_color(&ray);
@@ -96,6 +112,14 @@ static void print(FILE* stream, const Vector3 color) {
 static Vector3 sampleSquare() {
   return Vector3_make(randomDouble() - 0.5, randomDouble() - 0.5, 0);
 }
+static Vector3 sampleDefocusDisk(const Camera camera) {
+  Vector3 p = Vector3_randomInUnitDisk();
+  return Vector3_add(
+    camera.center,
+    Vector3_add(
+      Vector3_scale(p.components[0], camera.defocus.u),
+      Vector3_scale(p.components[1], camera.defocus.v)));
+}
 static Ray Camera_ray(Camera camera[static 1], size_t i, size_t j) {
   Vector3 offset = sampleSquare();
   Vector3 sample = Vector_add(
@@ -103,7 +127,9 @@ static Ray Camera_ray(Camera camera[static 1], size_t i, size_t j) {
     Vector_add(
       Vector_scale(i + offset.components[0], camera->pixel.delta_u),
       Vector_scale(j + offset.components[1], camera->pixel.delta_v)));
-  Vector3 direction = Vector_subtract(sample, camera->center);
-  Ray result = { .direction = direction, .origin = camera->center };
+  Vector3 origin =
+    (camera->defocus.angle <= 0) ? camera->center : sampleDefocusDisk(*camera);
+  Vector3 direction = Vector_subtract(sample, origin);
+  Ray result = { .direction = direction, .origin = origin };
   return result;
 }
